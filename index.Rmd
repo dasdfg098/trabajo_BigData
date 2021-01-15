@@ -1,0 +1,750 @@
+---
+title: <FONT COLOR= "88dbd3"><font face= "Impact"><center>Datos y estadísticas de Youtube; Bad Gyal</font></center></FONT>
+subtitle: "Daniel Casino Ballesteros (dacaba4@alumni.uv.es)"
+author: "Universitat de València"
+date: "Diciembre de 2020 (actualizado el `r format(Sys.time(), '%d-%m-%Y')`)"
+output:
+  html_document:
+    theme: flatly
+    highlight: textmate 
+    toc: true
+    toc_depth: 3 
+    toc_float: 
+      collapsed: true
+      smooth_scroll: true
+    self_contained: true
+    number_sections: false
+    df_print: kable
+    code_download: true
+    code_folding: show
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r packages-setup, include = FALSE}
+library(tidyverse)
+library(klippy)  #- remotes::install_github("rlesur/klippy")
+library(knitr)
+library(tidyverse)
+library(lubridate)
+library(reactable)
+library(ggplot2)
+library(gganimate)
+library(data.table)
+library(gt)
+library(plotly)
+# devtools::install_github("hadley/emo")
+
+```
+
+```{r chunk-setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, message = FALSE, warning = FALSE, 
+                      #results = "hold",
+                      cache = FALSE, cache.path = "/caches/", comment = "#>",
+                      #fig.width = 7, #fig.height= 7,   
+                      #out.width = 7, out.height = 7,
+                      collapse = TRUE,  fig.show = "hold",
+                      fig.asp = 7/9, out.width = "60%", fig.align = "center")
+knitr::opts_chunk$set(dev = "png", dev.args = list(type = "cairo-png"))
+```
+
+```{r options-setup, include = FALSE}
+options(scipen = 999) #- para quitar la notación científica
+options("yaml.eval.expr" = TRUE) 
+```
+
+
+```{r klippy, echo = FALSE}
+klippy::klippy(position = c("top", "right")) #- remotes::install_github("rlesur/klippy")
+```
+
+``` {css, echo=FALSE}
+body {
+  background-image: url('./imagenes/headphones.jpg');
+  background-repeat: repeat;
+  background-size: 100%;
+}
+
+div {
+  background-color: rgba(255, 255, 255, 0.55)   /* 55% opaque white */;
+  padding: 0.10em;
+}
+
+```
+
+
+
+<div style="text-align: justify"><div/>
+
+<hr class="linea-black">
+
+Trabajo elaborado para la asignatura "Programación y manejo de datos en la era del Big Data" de la Universitat de València durante el curso 2020-2021. El repo del trabajo está [aquí](https://github.com/dasdfg098/trabajo_BigData){target="_blank"}. La página web de la asignatura y los trabajos de mis compañeros pueden verse [aquí](https://perezp44.github.io/intro-ds-20-21-web/07-trabajos.html){target="_blank"}.
+
+------------
+
+# <FONT COLOR= "eb88cd">**1. Introducción**</FONT>
+El trabajo consiste en la obtención y manipulación de datos obtenidos de una de las principales fuentes de alojamiento de videos: **Youtube**, así como, la creación de diferentes gráficos y tablas ilustrativas a partir de los datos que obtengamos de esta. Los datos a manipular no son datos cualesquiera; no son datos de estadísticas generales, si no, datos de un canal concreto, el canal de música de una artista que me gusta mucho: **Bad Gyal**. Quería hacer un trabajo más ameno, sobre algo con lo que estuviera cómodo trabajando, pues, es un trabajo de bastantes horas-días y mejor si resulta entretenido. Es por esto la elección del tema. 
+
+## <FONT COLOR="eb88cd">**¿Quién es:**</FONT> ![](imagenes/logobadgyal.png){width="15%"}<FONT COLOR="eb88cd">**?**</FONT>
+Alba Farelo, más conocida como **Bad Gyal** es una artista de la escena musical urbana española, nacida en *Vilassar de Mar* (Catalunya) en 1997.
+
+Alba comenzaría su andadura musical en la escena urbana de nuestro país en 2016, en un momento donde el género "trap" estaba al alza y los pocos artistas que explotaban este género estaban cosechando grandes éxitos.
+La popularidad de la artista comenzó a aumentar tras subir a *Youtube* una cover casera en catalán del mítico "Work" de Rihanna. Tras este primer tema que la colocaría de lleno dentro de la escena, le sucederían otros como temas "Indapanden", "Leiriss" o "No pierdo Nada", pero, no sería hasta la publicación de su primera mixtape **"Slow Wine"** el 9 de noviembre de 2016 de la mano de **Fake Guido** cuando comenzaría su verdadera andadura por los éxitos de nuestro país.
+El sencillo **Fiebre** dentro de la primera mixtape de Alba cosecharía un gran éxito, siendo esta canción uno de los temás más reconocidos a día de hoy de la artista.
+A partir de este momento, le sucederían grandes proyectos como su segunda mixtape **"Worldwide Angel"** en 2018 y  giras por festivales y salas de España y de el resto del mundo (incluyendo ciudades como Tokio, Hong Kong, EEUU, México...). 
+
+En 2019 firmaría con el sello **Interscope Records**, siendo esto un punto de inflexión para Alba, pues, el éxito que había cosechado hasta el momento comenzaría a multiplicarse, hasta el punto de, obtener su primer Disco de Oro con su *single* **Santa María**.
+
+Su música ha sido catalogada como una fusión entre *reggaeton*, *dancehall* y ritmos urbanos como *trap*. Durante su carrera, ha recibido constantes críticas de ciertos sectores de público por el uso de *auto-tune* en sus conciertos o canciones. Alba ha sabido como aprovechar esta herramienta de voz, convertirla en uno de sus sellos de identidad.
+
+**Bad Gyal** a día de hoy en nuestro país está cosechando grandes éxitos y es que, para el público joven con gustos musicales que tienden a la música urbana, las canciones de Alba, son canciones pegadizas y que atraen, ya sea por el ritmo que emanan o por el carácter explícito y "pegadizo" de sus letras.
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/I6dIX15Rjew" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
+# <FONT COLOR="eb88cd">**2. Procedencia y explicación**</FONT>
+En este apartado y los que vengan a continuación voy a centrarme en explicar la procedencia de los datos, los paquetes que he ido utilizando, así como la limpieza de las variables no tan necesarias y los problemas que me han ido surgiendo a lo largo del trabajo.
+
+Los datos proceden mayoritariamente de Youtube, tanto del [canal principal de Bad Gyal](https://www.youtube.com/channel/UC2ypBaYnDvnlbzyAH8w2jsw), como su [canal de VEVO](https://www.youtube.com/channel/UCOmtuk6Mp66DRFcg81kr3eQ). Los datos de los videos de ambos canales los he obtenido gracias al paquete **tuber**, mediante este he podido obtener datos acerca de las visitas, *likes*, *dislikes* y comentarios de cada video.
+
+Comenzar a utilizar este paquete no me ha resultado nada sencillo, pues, había que habilitar unas API's, las cuales, hasta ese momento no sabía muy bien lo que eran. Para poder activar el paquete y las API, he seguido [este tutorial](https://www.storybench.org/how-to-download-youtube-data-in-r-using-tuber-and-purrr/). 
+
+A continuación, siguiendo el tutorial citado había que crear un *OAuth client* y autentificarlo. Adjunto el código base que he utilizado para abrir el OAuth [^1] y autentificarlo: procedimiento requerido para poder obtener los datos de cualquier video o canal procedentes de Youtube mediante el paquete tuber.
+```{r, eval = TRUE, echo=TRUE}
+library(tuber)
+client_id <- "932129872577-1bga8vv47tb6ongavh0gjvf7i41ojd4b.apps.googleusercontent.com"
+client_secret <- "fgRz-atI5Huuy3X3fsU-vCs7"
+
+yt_oauth(client_id, client_secret)
+
+```
+
+## <FONT COLOR="eb88cd">Obteniendo las estadísticas y datos principales</FONT>
+Una vez abierta el OAuth y con los credenciales autenticados, he procedido a descargar los stats por canal.
+En mi caso, Bad Gyal tiene 2 canales: VEVO y personal, de forma que, he tenido que hacer el procedimiento 2 veces.
+
+Primero, descargamos los stats de los videos del canal principal mediante la función *yt_search()*, incluida en el paquete.
+```{r, eval = TRUE, echo=TRUE}
+bgcanal1<- yt_search(type="video", term="", channel_id = "UC2ypBaYnDvnlbzyAH8w2jsw")
+bgcanal1<- bgcanal1 %>% mutate(date = as.Date(publishedAt)) %>% select(video_id, date, title)
+```
+
+Estos stats los arreglamos un poco, ya que, el dataframe resultante es un dataframe que nos da la fecha de publicación con la hora exacta, la cual, no la necesitamos y también nos da datos acerca de la descripción de cada video, los cuales tampoco necesitaremos usar.
+De esta forma, tendremos un dataframe con el id, la fecha (modificada para que no aparezca la hora) y el título.
+
+Si queremos más detalles acerca de los videos tenemos que utilizar la función *get_stats()* dentro del paquete. Como queremos hacerlo de todos los videos del canal y tenemos la id en el dataframe anterior, podemos utilizar un bucle para obtener los stats de todos directamente en vez de ir video a video.
+Para coger los stats de todos los videos utilizaremos un **lapply()**, esta función nos pide el dataframe y luego la función que utilizaremos, en clase habíamos utilizado una función ya existente: "mean" para la media. En nuestro caso, crearemos primero una función para que coja los stats de todas las variables y no tengamos que introducir la id de los videos nosotros manualmente una por una, pues, !Ojo, hay 32 videos! y con esta función ya creada, el **lapply** será más facil.
+
+```{r, eval=TRUE, echo=TRUE}
+#Creamos la función que meteremos en el lapply. Esta función hace que por a cada id del dataframe anterior se aplique el get_stats(), para así obtener detalles más concretos de cada video del canal.
+funcion_stats_videos <- function(x) {
+  get_stats(video_id = x)
+}
+
+bgstatlista <- lapply(bgcanal1$video_id, funcion_stats_videos)
+```
+
+De esta forma, el lapply nos devolverá una lista, la cual, para transformarla en dataframe utilizaremos el siguiente código:
+```{r, eval=TRUE, echo=TRUE}
+bg_stats_videos<- do.call(rbind.data.frame, bgstatlista) 
+```
+
+Como vemos, ya tenemos 2 dataframes, y solo nos quedará juntarlos para tener todos estos *datos-stats* en uno solo:
+```{r, eval=TRUE, echo=TRUE}
+#Ahora hacemos un full join para ambos dataframes.
+bg_stats_full<- full_join(bgcanal1, bg_stats_videos, by=c("video_id"="id"))
+```
+
+Ahora, repetimos las mismas acciones para el 2º canal, el VEVO.
+```{r, eval=TRUE, echo=TRUE}
+#Los primeros stats del canal VEVO
+bgcanal2<- yt_search(type="video", term="", channel_id = "UCOmtuk6Mp66DRFcg81kr3eQ")
+bgcanal2<- bgcanal2 %>% mutate(date = as.Date(publishedAt)) %>% select(video_id, date, title)
+
+#Bucle para obtener los segundos stats 
+bgstatlista2 <- lapply(bgcanal2$video_id, funcion_stats_videos)
+
+#Para transformar la lista en dataframe, utilizamos la función
+bg_stats_videos2<- do.call(rbind.data.frame, bgstatlista2)
+
+#Ahora hacemos un full join para ambos dataframes.
+bg_stats_full2<- full_join(bgcanal2, bg_stats_videos2, by=c("video_id"="id"))
+
+```
+
+Así, finalmente agrupamos los dataframes de los 2 canales en un solo dataframe, y además lo arreglamos un poco: cambiamos los nombres de las columnas, seleccionamos las variables que queremos que aparezcan y pasamos de *character* a *numeric* las columnas tanto de *likes*, comentarios y visitas.
+```{r, eval=TRUE, echo=TRUE}
+#Unimos
+bg_stats_ambos_canales<- full_join(bg_stats_full, bg_stats_full2)
+
+#Arreglamos un poco el dataframe
+bg_stats_ambos_canales<- bg_stats_ambos_canales %>%
+  select(title, date, viewCount, likeCount, commentCount) %>%
+  rename(titulo=title, fecha=date, visitas=viewCount, likes=likeCount, comentarios=commentCount)%>%
+  arrange(fecha)
+
+bg_stats_ambos_canales1<- transform(bg_stats_ambos_canales, visitas=as.numeric(as.character(visitas)),
+  likes=as.numeric(as.character(likes)),
+  comentarios=as.numeric(as.character(comentarios)))
+
+
+#- Para finalizar, limpiamos el Global Env.
+objetos_no_borrar <- c("bg_stats_ambos_canales1")
+rm(list = ls()[!ls() %in% objetos_no_borrar])
+```
+
+El dataframe resultante será de esta forma:
+```{r, echo=FALSE, eval=TRUE}
+reactable(
+  bg_stats_ambos_canales1,
+  defaultColDef = colDef(
+    header = function(value) gsub(".", " ", value, fixed = TRUE),
+    cell = function(value) format(value, nsmall = 1),
+    align = "center",
+    minWidth = 70,
+    headerStyle = list(background = "#f7f7f8")
+  ),
+  columns = list(
+    titulo = colDef(style=function(value){
+      list(minWidth = 140, fontWeight="bold")
+    }
+  )),
+  bordered = TRUE,
+  highlight = TRUE,
+  defaultPageSize=5,
+)
+```
+
+## <FONT COLOR="eb88cd">Tabla: 3 videos más vistos</FONT>
+A partir del dataframe anterior, voy a mostrar los 3 videos más vistos de los canales de **Bad Gyal**, en este caso, utilizaré el paquete **gt** para la tabla, en vez del paquete que ya he usado antes: **reactable**.
+
+Primero, modificamos el dataframe de forma que nos muestre los títulos ordenados de más visitas a menos, y a su vez, que nos muestre también cuantos likes y comentarios tienen, para, hacer un escalado de color desde el que más tenga al que menos tenga.
+A partir de aquí, generaremos una tabla que muestre los 3 primeros títulos.
+```{r, echo=TRUE, eval=TRUE}
+#Modificamos el dataframe
+bg_stats_3_primeros <- bg_stats_ambos_canales1 %>% slice_max(visitas, n=3)
+
+#Hacemos la tabla a nuestro gusto: colores con escala, desde una paleta verde para los valores más altos a una paleta de rojos para los valores más bajos.
+tabla_gt<- bg_stats_3_primeros %>% 
+  gt() %>% 
+  tab_header(title= md("**3 videos más vistos**")) %>% 
+  tab_options(heading.background.color = "#91ede4", column_labels.font.weight =  "bold")%>%
+  cols_align(align="center") %>%
+  tab_style(cell_borders(sides="all", color="black"), cells_body())%>%
+  data_color( 
+    columns = vars(visitas), 
+    colors = scales::col_numeric( 
+      palette = c(
+        "#db535f","#ffe16b", "#64de68"), # 
+      domain = c(max(visitas), min(visitas)) )
+    ) %>% 
+  data_color( 
+    columns = vars(likes), 
+    colors = scales::col_numeric( 
+      palette = c(
+        "#db535f","#ffe16b", "#64de68"), # 
+      domain = c(max(likes), min(likes)) )
+    ) %>%
+  data_color( 
+    columns = vars(comentarios), 
+    colors = scales::col_numeric( 
+      palette = c(
+        "#db535f","#ffe16b","#64de68"), # 
+      domain = c(max(comentarios), min(comentarios)) )
+    ) 
+
+#La mostramos
+tabla_gt
+
+
+```
+
+
+## <FONT COLOR="eb88cd">Gráfico de tarta: videos con más likes</FONT>
+En este apartado he querido realizar un gráfico de quesitos o **"pie chart"** a partir de los 6 videos con más likes.
+El gráfico lo he hecho a partir del porcentaje de visitas de cada video sobre el total, variable que he tenido que crear, de forma que, se creará un gráfico de trozos de tarta con 6 títulos más una variable que engloba a los videos no seleccionados, porcentaje de la cual será el 100% menos el porcentaje de la suma de los títulos seleccionados.
+
+Para este, nos hemos basado en el modelo básico propuesto en [The R Graph Gallery](https://www.r-graph-gallery.com/piechart-ggplot2.html)
+
+```{r, echo=TRUE, eval=TRUE}
+#Conseguimos en vector el número total de likes (sumando los likes de todos los videos)
+suma_total_likes<- bg_stats_ambos_canales1 %>% summarise(suma=sum(likes))
+suma_total_likes<- suma_total_likes[1,1]
+
+#Creamos una nueva variable "% likes" para saber el porcentaje de likes que le corresponde a cada video
+bg_stats_pie<- bg_stats_ambos_canales1 %>% mutate(`% likes`= likes / suma_total_likes *100) %>% select(titulo, `% likes`)
+
+#Hacemos un slice para aquellos videos con mayor porcentaje de likes y sumamos los likes de todos para ver cuanto %de likes sobre el total(100) hay en estos 6 videos.
+bg_6stats_pie<- bg_stats_pie %>% slice_max(`% likes`, n=6) %>% mutate(suma=sum(`% likes`))
+
+#Calculamos la diferencia entre el porcentaje que suman los 6 videos con más likes (el porcentaje anterior) y el total.
+dif_6stats<- 100- bg_6stats_pie$suma[1]
+
+#Añadimos esa diferencia como una columna más para nuestro dataframe y la llamamos "otros"; esta columna incluirá los porcentajes de los demás videos-títulos que no han sido incluido en los 6 videos del slice_max.
+bg_6stats_pie<- bg_6stats_pie%>%select(titulo, `% likes`) %>% add_row(titulo="Otros", `% likes`=dif_6stats)
+
+#Hacemos el pie chart. Sería como un ggplot + geom_bar() normal, solo que, hacemos un giro de coordenadas con coord_polar para darle forma redonda, el resto de cosas que he ido poniendo son añadidos extra.
+bgpie<- ggplot(bg_6stats_pie, aes(x="", y=`% likes`, fill=titulo))+
+  geom_bar(stat="identity",width=1, color="white")+
+  coord_polar("y", start=0)+
+  geom_text(aes(label=paste0(round(`% likes`), "%")), position=position_stack(vjust=0.5))+
+  labs(title="Gráfico de tarta: likes")+
+   theme_void()
+```
+
+```{r out.width="80%", echo=FALSE, eval=TRUE}
+bgpie
+```
+
+
+# <FONT COLOR="eb88cd">**3. Obteniendo más datos: dataframe secundario**</FONT>
+El dataframe anterior que agrupa los videos de ambos canales no nos ofrece información sobre las visitas diarias en los videos desde su publicación, por lo que, para hacer diferentes transformaciones más adelante lo que voy a hacer es conseguir de forma "vaga" estas visitas diarias.
+Para esto, he decidido filtrar del dataframe principal anterior los videos con menos de 1.000.000 visitas y con menos de 1000 comentarios y operar a partir de ahí.
+
+El procedimiento que he seguido ha sido algo laborioso, pues, en este caso no sabía como introduccir un loop para hacerlo más automático y he tenido que ir fila a fila (video a video, de los 17 resultantes por el filtrado que he comentado).
+Este procedimiento lo detallo a continuación y también en el código que le sigue:
+
+* Almacenamos en 17 *variables-values* las fechas a partir del dataframe que hemos filtrado y otra más para la fecha actual, mediante la función today() del paquete **lubridate**.
+* Almacenamos las visitas de cada video en variables diferentes (de nuevo 17 variables, una por cada video).
+* Calculamos la diferencia en días, es decir, los días que han pasado desde la publicación de los videos y la fecha actual, y almacenamos estos datos de nuevo en 17 variables.
+* Calculamos la media diaria de las visitas de cada video, con la diferencia de días anterior y las visitas totales.
+* Creamos un dataframe para cada video, el cual, se compone de una columna llamada fecha, la cual está construida previamente con la función **seq()** y otra columna con la media diaria de cada video calculada. 
+Esta primera columna estará formada por los días que han pasado desde la publicación del video hasta la fecha actual, es decir, si un video estuviera publicado 01/01/2020, las filas de la columna serían: 01/01/20, 02/01/20, 03/01/20... así hasta la fecha a día de hoy.
+* Uniremos mediante full_join() cada uno de los dataframes creados, de forma que, tendremos un dataframe en formato *wider* donde habrá una columna común (fecha) y una columna por cada media de visitas calculada de los videos (17).
+
+
+```{r, eval=TRUE, echo=TRUE}
+#Videos >1.000.000 views y >1000 comentarios
+bg_mayor_1<- bg_stats_ambos_canales1 %>% filter(visitas>=1000000, comentarios>=1000)
+
+#Fechas
+fechahoy <- today()
+fechaPAI<-bg_mayor_1$fecha[1]
+fechaINDAPAN<-bg_mayor_1$fecha[2]
+fechaMERCA<- bg_mayor_1$fecha[3]
+fechaFIEBRE<- bg_mayor_1$fecha[4]
+fechaJACA<- bg_mayor_1$fecha[5]
+fechaNICE<- bg_mayor_1$fecha[6]
+fechaCAND <- bg_mayor_1$fecha[7]
+fechaINT<- bg_mayor_1$fecha[8]
+fechaMAS<- bg_mayor_1$fecha[9]
+fechaOPEN<- bg_mayor_1$fecha[10]
+fechaIUAL<- bg_mayor_1$fecha[11]
+fechaMARI<- bg_mayor_1$fecha[12]
+fechaHOOKAH<- bg_mayor_1$fecha[13]
+fechaZORR<- bg_mayor_1$fecha[14]
+fechaBOM<- bg_mayor_1$fecha[15]
+fechaSEX<- bg_mayor_1$fecha[16]
+fechaBLIN<- bg_mayor_1$fecha[17]
+
+#Visitas
+numPAI<- bg_mayor_1$visitas[1]
+numINDAPAN<- bg_mayor_1$visitas[2]
+numMERCA<- bg_mayor_1$visitas[3]
+numFIEBRE<- bg_mayor_1$visitas[4]
+numJACA<- bg_mayor_1$visitas[5]
+numNICE<- bg_mayor_1$visitas[6]
+numCAND<- bg_mayor_1$visitas[7]
+numINT<- bg_mayor_1$visitas[8]
+numMAS<- bg_mayor_1$visitas[9]
+numOPEN<- bg_mayor_1$visitas[10]
+numIUAL<- bg_mayor_1$visitas[11]
+numMARI<- bg_mayor_1$visitas[12]
+numHOOKAH<- bg_mayor_1$visitas[13]
+numZORR<- bg_mayor_1$visitas[14]
+numBOM<- bg_mayor_1$visitas[15]
+numSEX<- bg_mayor_1$visitas[16]
+numBLIN<- bg_mayor_1$visitas[17]
+
+#Días que han pasado desde fecha video a hoy
+difPAI<- difftime(fechahoy, fechaPAI, units="days") %>% as.numeric()
+difINDAPAN<- difftime(fechahoy, fechaINDAPAN, units="days") %>% as.numeric()
+difMERCA<- difftime(fechahoy, fechaMERCA, units="days") %>% as.numeric()
+difFIEBRE<- difftime(fechahoy, fechaFIEBRE, units="days") %>% as.numeric()
+difJACA<- difftime(fechahoy, fechaJACA, units="days") %>% as.numeric()
+difNICE<- difftime(fechahoy, fechaNICE, units="days") %>% as.numeric()
+difCAND<- difftime(fechahoy, fechaCAND, units="days") %>% as.numeric()
+difINT<- difftime(fechahoy, fechaINT, units="days") %>% as.numeric()
+difMAS<- difftime(fechahoy, fechaMAS, units="days") %>% as.numeric()
+difOPEN<- difftime(fechahoy, fechaOPEN, units="days") %>% as.numeric()
+difIUAL<- difftime(fechahoy, fechaIUAL, units="days") %>% as.numeric()
+difMARI<- difftime(fechahoy, fechaMARI, units="days") %>% as.numeric()
+difHOOKAH<- difftime(fechahoy, fechaHOOKAH, units="days") %>% as.numeric()
+difZORR<- difftime(fechahoy, fechaZORR, units="days") %>% as.numeric()
+difBOM<- difftime(fechahoy, fechaBOM, units="days") %>% as.numeric()
+difSEX<- difftime(fechahoy, fechaSEX, units="days") %>% as.numeric()
+difBLIN<- difftime(fechahoy, fechaBLIN, units="days") %>% as.numeric()
+
+#Media diaria de visitas (con los días que han pasado desde fecha video a hoy)
+mediaPAI<- numPAI / difPAI
+mediaINDA<- numINDAPAN / difINDAPAN
+mediaMERCA<- numMERCA / difMERCA
+mediaFIEBRE<- numFIEBRE /difFIEBRE
+mediaJACA <- numJACA /difJACA
+mediaNICE<- numNICE /difNICE
+mediaCAND <- numCAND/ difCAND
+mediaINT<- numINT/difINT
+mediaMAS<- numMAS/difMAS
+mediaOPEN<- numOPEN/difOPEN
+mediaIUAL<- numIUAL/difIUAL
+mediaMARI<- numMARI/difMARI
+mediaHOOKAH<- numHOOKAH/difHOOKAH
+mediaZORR<- numZORR/difZORR
+mediaBOM<- numBOM/difBOM
+mediaSEX<- numSEX/difSEX
+mediaBLIN<- numBLIN/difBLIN
+
+
+#Creamos dataframes
+fecha=seq(fechaPAI,length=difPAI,by="day")
+df1<- data.frame(fecha,mediaPAI)
+
+fecha=seq(fechaINDAPAN,length=difINDAPAN,by="day")
+df2<- data.frame(fecha,mediaINDA)
+
+fecha=seq(fechaMERCA,length=difMERCA,by="day")
+df3<- data.frame(fecha,mediaMERCA)
+
+fecha=seq(fechaFIEBRE,length=difFIEBRE,by="day")
+df4<- data.frame(fecha,mediaFIEBRE)
+
+fecha=seq(fechaJACA,length=difJACA,by="day")
+df5<- data.frame(fecha,mediaJACA)
+
+fecha=seq(fechaNICE,length=difNICE,by="day")
+df6<- data.frame(fecha,mediaNICE)
+
+fecha=seq(fechaCAND,length=difCAND,by="day")
+df7<- data.frame(fecha,mediaCAND)
+
+fecha=seq(fechaINT,length=difINT,by="day")
+df8<- data.frame(fecha,mediaINT)
+
+fecha=seq(fechaMAS,length=difMAS,by="day")
+df9<- data.frame(fecha,mediaMAS)
+
+fecha=seq(fechaOPEN,length=difOPEN,by="day")
+df10<- data.frame(fecha,mediaOPEN)
+
+fecha=seq(fechaIUAL,length=difIUAL,by="day")
+df11<- data.frame(fecha,mediaIUAL)
+
+fecha=seq(fechaMARI,length=difMARI,by="day")
+df12<- data.frame(fecha,mediaMARI)
+
+fecha=seq(fechaHOOKAH,length=difHOOKAH,by="day")
+df13<- data.frame(fecha,mediaHOOKAH)
+
+fecha=seq(fechaZORR,length=difZORR,by="day")
+df14<- data.frame(fecha,mediaZORR)
+
+fecha=seq(fechaBOM,length=difBOM,by="day")
+df15<- data.frame(fecha,mediaBOM)
+
+fecha=seq(fechaSEX,length=difSEX,by="day")
+df16<- data.frame(fecha,mediaSEX)
+
+fecha=seq(fechaBLIN,length=difBLIN,by="day")
+df17<- data.frame(fecha,mediaBLIN)
+
+#Unimos dataframes
+df_visitas1<- full_join(df1,df2)
+df_visitas2<- full_join(df_visitas1, df3)
+df_v3<- full_join(df_visitas2,df4)
+df_v4<- full_join(df_v3,df5)
+df_v5<- full_join(df_v4,df6)
+df_v6<- full_join(df_v5,df7)
+df_v7<- full_join(df_v6,df8)
+df_v8<- full_join(df_v7,df9)
+df_v9<- full_join(df_v8,df10)
+df_v10<- full_join(df_v9,df11)
+df_v11<- full_join(df_v10,df12)
+df_v12<- full_join(df_v11,df13)
+df_v13<- full_join(df_v12,df14)
+df_v14<- full_join(df_v13,df15)
+df_v15<- full_join(df_v14,df16)
+df_completo<- full_join(df_v15,df17)
+
+
+#- Limpiamos el Global Env.
+objetos_no_borrar <- c("bg_stats_ambos_canales1","df_completo","bg_mayor_1")
+rm(list = ls()[!ls() %in% objetos_no_borrar])
+```
+
+## <FONT COLOR="eb88cd">Race bar chart</FONT>
+A partir del dataframe final que he creado (**df_completo**), he querido realizar un gráfico animado de carrera de barras basado en las visualizaciones diarias de cada título. De esta forma,  el dataframe anterior, formado por la fecha en días secuencial desde 2016 a la actualidad y los títulos de los videos, tendrá que modificarse, de forma que, tendrá que pasarse a formato *longer* ,de manera que, las diferentes "medias" que aparecen estarán todas ahora en una columna llamada **título** y los valores de estas estarán en una columna llamada **visitas**. Además, mediante un drop_na() eliminaremos todas aquellas filas que no tuviesen datos, de forma que, si para una fecha determinada solo existía un título, ya no nos aparecerán los demás títulos con NA.
+
+A continuación, agruparemos por título y crearemos una nueva variable, que es la suma acumulada de visitas, es decir, si a 1/X/20 se crea el video y su media de visualizaciones diarias es de 2000, la suma acumulada en ese momento será de 2000. Al día siguiente, 2/X/20, su media visualizaciones será la misma (2000), pero, su suma acumulada será de 4000, y así sucesivamente.
+
+Por otro lado, agruparemos por fecha y a partir de esta crearemos una nueva variable ranking mediante la función *dense_rank()* , siendo la variable por la cual queremos que haga un ranking: la suma acumulada anterior. De esta forma, si por ejemplo a 25/X/20 hay 2 videos, y uno tiene mayor acumulada que el otro, en la columna ranking del primero de ellos aparecerá como **1** y el segundo con mayor acumulada como **2**.
+
+Así, mediante este dataframe ya modificado, podremos crear un gráfico animado de carrera de barras, que nos muestra la evolución de las visita diarias (conseguida a través de la media, como hemos visto en el punto anterior) de los títulos desde su fecha de creación hasta la actualidad.
+
+La dificultad de este gráfico, [aunque está inspirado en uno ya existente](https://anderfernandez.com/blog/como-crear-animaciones-en-r-con-gganimate/), ha sido la creación desde cero de un dataframe complejo, cuyos datos principales he tenido que calcularlos a partir de los pocos que ya tenía gracias al paquete "tuber".
+
+```{r, echo=TRUE, eval=TRUE}
+
+#GRAFICO PLOT
+
+df_completo1<-df_completo %>% rename(Pai=mediaPAI, Indapanden=mediaINDA, Mercadona=mediaMERCA, Fiebre=mediaFIEBRE, Jacaranda=mediaJACA, `Nicest Cocky`=mediaNICE, Candela=mediaCAND, Internationally=mediaINT, `Más Raro`=mediaMAS, `Open The Door`=mediaOPEN, `Yo Sigo Iual`=mediaIUAL, `Santa María`=mediaMARI, Hookah=mediaHOOKAH, Zorra=mediaZORR, `Bom Bom`=mediaBOM, `Aprendiendo El Sexo`=mediaSEX, `Blin Blin`=mediaBLIN )
+
+#modificamos
+df_plot <- df_completo1 %>% pivot_longer(cols=2:18, names_to="titulo",values_to="visitas") %>% drop_na()
+df_plot2 <- df_plot %>% group_by(titulo)%>% mutate(acumulada=cumsum(visitas))
+df_plot3 <- df_plot2 %>% group_by(fecha) %>% mutate(ranking= dense_rank(desc(acumulada)))
+
+#PLOT
+animacion <- df_plot3 %>%
+  ggplot() +
+  geom_col(aes(ranking, acumulada, fill = titulo)) +
+  geom_text(aes(ranking, acumulada, label = acumulada), hjust=-0.1) +
+  geom_text(aes(ranking, y=0 , label = titulo), hjust=1.1) +
+  geom_text(aes(x=15, y=max(acumulada) , label = as.factor(fecha)), vjust = 0.2, alpha = 0.5,  col = "gray", size = 20) +
+  coord_flip(clip = "off", expand = FALSE) + scale_x_reverse() +
+  theme_minimal() + theme(
+    panel.grid = element_blank(),
+    legend.position = "none",
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    plot.margin = margin(1, 4, 1, 3, "cm")
+  ) +
+  transition_states(fecha, state_length = 0, transition_length = 2) +
+  enter_fade() +
+  exit_fade() +
+  ease_aes('quadratic-in-out')
+
+
+
+```
+
+```{r out.width="50%", echo=FALSE, eval=FALSE}
+animate(animacion, width = 700, height = 432, fps = 30, duration = 70, end_pause = 100, rewind = FALSE)
+
+```
+
+```{r out.width="80%", fig.cap="Visualizaciones por día de cada título", echo=FALSE, eval=TRUE}
+knitr::include_graphics("./imagenes/anim3.gif")
+
+```
+
+# <FONT COLOR="eb88cd"> **4. Obteniendo datos sobre los comentarios** </FONT>
+En este apartado, nos vamos a basar en la obtención de datos provenientes de los comentarios de los videos, usando principalmente la función **get_all_comments()** del paquete "tuber". 
+
+## <FONT COLOR="eb88cd">Nube de comentarios</FONT COLOR>
+Aquí lo que queremos mostrar son los comentarios que más repite la gente acerca de uno de uno de los últimos videos de Bad Gyal: *"Aprendiendo el sexo"*. Para ello, nos descargaremos todos los comentarios, y mediante la función **stri_extract_all_words()** del paquete **stringi** extraeremos todas las palabras que aparecen en el dataframe de comentarios descargados. 
+Por otro lado, usaré el paquete **tm**, el cual nos proporciona una serie de palabras comunes que luego utilizaré para poder eliminar y que no salgan en la wordcloud. 
+
+A partir de estas palabras extraidas, creamos un nuevo dataframe y en este haremos un *group* de las palabras y una vez agrupadas crearemos una nueva variable con la función **count()** para ver cuantas veces aparecen. Así, pues, mediante las palabras comunes que queremos quitar, proporcionadas por el paquete **tm**, haremos un filtrado para poder eliminarlas de nuestro dataframe y además las ordenaremos de más frecuentes a menos, para así, finalmente, crear la **nube de palabras**.
+
+```{r echo=TRUE, eval=TRUE, fig.align="center"}
+# WORDCLOUD
+comentarios<- get_all_comments(video_id= "MBm0iCu_FBI")
+
+comentarios_modif<- comentarios %>% select(textOriginal)
+
+library(tidytext)
+library(wordcloud2)
+library(stringi)
+library(tm)
+
+comentarios_modif_2<- comentarios_modif %>% mutate(texto= stri_trans_general(tolower(textOriginal),"Latin-ASCII")) %>% select(texto)
+
+remove = stopwords("spanish")
+
+Palabras<- c(stri_extract_all_words(comentarios_modif_2$texto))
+df<-data.frame(Palabras = unlist(Palabras))
+
+df_palabras<- df %>% group_by(Palabras) %>% count() %>% arrange(desc(n)) %>% filter(nchar(Palabras) >=3) %>% filter(n>10 & Palabras %in% remove==FALSE)
+
+#wordcloud2(df_palabras, color="random-light", shape="circle")
+
+#- Para finalizar, limpiamos el Global Env.
+objetos_no_borrar <- c("df_palabras" , "comentarios")
+rm(list = ls()[!ls() %in% objetos_no_borrar])
+```
+
+```{r echo=FALSE, eval=TRUE, fig.align="center"}
+wordcloud2(df_palabras, color="random-light", shape="circle")
+```
+
+
+------ 
+
+## <FONT COLOR="eb88cd">Gráficos de línea: vídeos de 2020 </FONT> {.tabset .tabset-fade}
+En este apartado lo que he querido hacer es mostrar la evolución del número de comentarios por fecha de las 3 canciones que ha sacado **Bad Gyal** durante el 2020: *Bom Bom (remix)*, *Aprendiendo El Sexo* y *Blin Blin*.
+Para ello, he descargado los comentarios de los 3 videos (aunque para el de AP he utilizado el dataframe del subpunto anterior) y a partir de los datos descargados he pasado la fecha al formato estándar de fecha con un as.Date() y agrupado por esta variable(fecha) para conseguir los comentarios publicados cada día.
+
+A partir de estas modificaciones realizadas en los dataframe, los he juntado y he hecho un gráfico de línea con *"facetting"*, para mostrar los 3 títulos por separado. A su vez, también he hecho otro gráfico para mostrar el número de comentarios totales en cada título.
+
+```{r, echo=TRUE, eval=TRUE}
+
+#aprendiendo el sexo
+comentarios_sex<- comentarios %>% mutate(fecha = as.Date(publishedAt)) %>% select(textOriginal, fecha)
+
+comentarios_sex2<- comentarios_sex %>% group_by(fecha) %>% count() %>% arrange(desc(n)) %>% rename(`número de comentarios`=n)
+
+#blin
+
+comentariosblin<- get_all_comments(video_id = "cFX4WR3g-kA")
+
+comentarios_blin2<- comentariosblin %>% mutate(fecha = as.Date(publishedAt)) %>% select(textOriginal, fecha)
+
+comentarios_blin3<- comentarios_blin2 %>% group_by(fecha) %>% count() %>% arrange(desc(n)) %>% rename(`número de comentarios`=n)
+
+
+#bom bom
+
+comentariosbom<- get_all_comments(video_id = "qOkURCVtlwU")
+
+comentarios_statsbom<- comentariosbom %>% mutate(fecha = as.Date(publishedAt)) %>% select(textOriginal, fecha)
+
+comentarios_statsbom2<- comentarios_statsbom %>% group_by(fecha) %>% count() %>% arrange(desc(n)) %>% rename(`número de comentarios`=n)
+
+
+#Añadimos la variable título
+comentarios_stats_asex<- comentarios_sex2 %>% mutate(titulo="Aprendiendo El Sexo")
+comentarios_stats_blin<- comentarios_blin3 %>% mutate(titulo="Blin Blin")
+comentarios_stats_bom<- comentarios_statsbom2 %>% mutate(titulo="Tu Eres Un Bom Bom (remix)")
+
+#Los juntamos
+comentarios_juntos<- full_join(comentarios_stats_blin, comentarios_stats_asex)
+comentarios_juntos_full<- full_join(comentarios_juntos, comentarios_stats_bom)
+
+#Modificamos el dataframe de comentarios_juntos_full para obtener el número total de comentarios por título
+comentarios_juntos_full_modif<- comentarios_juntos_full%>% group_by(titulo)%>%summarise(`Número total de comentarios` = sum(`número de comentarios`))
+
+#- Limpiamos el Global Env.
+objetos_no_borrar <- c("comentarios_juntos_full_modif", "comentarios_juntos_full")
+rm(list = ls()[!ls() %in% objetos_no_borrar])
+
+#Plots
+plot_total_coment<- ggplot(comentarios_juntos_full_modif, aes(x=titulo, y=`Número total de comentarios`, fill=titulo)) + geom_bar(stat="identity") + coord_flip() + theme(legend.position="none") + theme_bw()
+
+plot_lineas<- ggplot(comentarios_juntos_full, aes(x=fecha, y=`número de comentarios`,color=titulo))+geom_line()+ facet_wrap(vars(titulo), nrow=2, ncol=2) + theme(legend.position = "none") + theme_bw()
+
+
+```
+
+### Grafico líneas
+```{r, echo=FALSE, eval=TRUE, out.width="80%"}
+plot_lineas
+```
+
+### Gráfico comentarios
+```{r, echo=FALSE, eval=TRUE, out.width="60%"}
+plot_total_coment
+```
+
+</div>
+
+# <FONT COLOR="eb88cd">**5. Datos sobre popularidad: mapa**</FONT>
+Mediante el paquete **gtrendsR** he querido mostrar la popularidad-tendencia en el buscador de *Google* de **Bad Gyal**. Para este apartado me he basado en el RScript de la sesión 11: ej_gtrends_NV. 
+El paquete gtrendsR mediante la función gtrends() te devuelve una lista con diferentes resultados, dependiendo de las variables que metas dentro de la función (estas son: la palabra o palabras que quieres que busque y analize de Google, la zona o país a analizar, la franja temporal...). 
+
+Mediante el dataframe obtenido, nos quedaremos con las variables referentes a las CCAA en las que destaca la busqueda de **Bad Gyal** y así, con estas y las geometrías mostraremos en un mapa con color, las comunidades autónomas donde **Bad Gyal** levanta más interés (donde, valor 100 representa el máximo interés-hits.).
+
+```{r echo=TRUE, eval=TRUE}
+library(gtrendsR)
+library(sf)
+library(ggrepel)
+library(ggspatial)
+
+#Seleccionamos los que queremos que nos busque y los términos.
+search_terms <- c("Bad Gyal")
+output_results <- gtrends(keyword = search_terms, geo = c("ES"), time = "today 12-m") 
+
+#- De la lista que nos devuelve el output_results seleccionamos el slot nº3: interés por región.
+BG_interes <- output_results[[3]]
+
+#Modificamos nuestro dataframe para que coincida con los nombres de las geometrías que vamos a cargar
+BG_interes_2<- BG_interes %>% select(location, hits) %>% pivot_wider(names_from= location, values_from=hits)
+
+BG_interes_3 <- BG_interes_2 %>% rename("Cataluña" = "Catalonia", "Comunidad Foral de Navarra"="Navarre", "Castilla y León"="Castile and León", "País Vasco"="Basque Country", "Comunidad Valenciana"="Valencian Community", "Comunidad de Madrid"="Community of Madrid", "Principado de Asturias"="Asturias", "Castilla-La Mancha"="Castile-La Mancha", "Andalucía"="Andalusia", "Aragón"="Aragon", "Illes Balears"="Balearic Islands", "Región de Murcia"="Region of Murcia","Canarias"="Canary Islands")
+
+BG_interes_3<- BG_interes_3 %>% pivot_longer(1:19, names_to="CCAA", values_to="hits") 
+
+BG_interes_3<- BG_interes_3 %>% drop_na()
+
+
+
+# CCAA
+#Cargamos
+load("./datos/geometria_ccaa.RData")
+
+#Arreglamos el dataframe
+CCAA_2<- CCAA %>% slice(c(1:17))
+CCAA_2 <- CCAA_2 %>% select(NombreCCAA, geometry)
+rmapshaper::ms_simplify(CCAA_2$geometry)
+
+df_stats_mapa<- full_join(CCAA_2, BG_interes_3, by=c("NombreCCAA" = "CCAA"))
+
+
+#Simplificamos las geometrías para que el tiempo de carga sea menor
+df_stats_mapa2<- df_stats_mapa %>% rmapshaper::ms_simplify()
+
+
+#Plot
+MAPA1<- ggplot(df_stats_mapa2, aes(geometry = geometry)) + geom_sf(aes(fill= hits))  + scale_fill_viridis_c(option = "inferno", trans = "sqrt", direction = -1, alpha= .6) + coord_sf(xlim = c(-20,10)) + labs (title = "Mapa 1: Distribución de busquedas de Bad Gyal",
+       subtitle = "Por CCAA",
+       caption = "Datos provenientes del paquete gtrendsR") + theme_minimal()
+
+```
+
+```{r echo=FALSE, eval=TRUE, out.width="90%"}
+MAPA1
+```
+
+
+# <FONT COLOR="eb88cd">**6. Trabajos en los que me he basado**</FONT>
+
+Los trabajos en los que me he ido inspirando para hacer el mío han sido varios:
+
+* [Transformaciones con el paquete tuber](https://www.r-bloggers.com/2017/12/using-the-tuber-package-to-analyse-a-youtube-channel/)
+* [Construcción de gráfico de carreras de barras](https://anderfernandez.com/blog/como-crear-animaciones-en-r-con-gganimate/)
+* [Wordcloud](https://rstudio-pubs-static.s3.amazonaws.com/460563_44403a3b087a415797de75ba3b21d17b.html)
+
+----------- 
+
+# <FONT COLOR="eb88cd">**7. Bibliografía**</FONT>
+
+A parte de los ya citados en los trabajos en los que me he inspirado, he ido sacando información e ideas en diferentes páginas:
+
+* [Apuntes-tutoriales: Data munging](https://perezp44.github.io/intro-ds-20-21-web/tutoriales/tt_05_data-munging.html)
+* [Apuntes-tutoriales: GGPLOT](https://perezp44.github.io/intro-ds-20-21-web/tutoriales/tt_06_ggplot2.html)
+* [Customizando tablas con GT](https://www.allisonhorst.com/post/2020-03-02-gt-tables-examples/)
+* [Imagen de fondo](https://rpubs.com/thaufas/555157)
+* [Creación de dataframe 1](https://rpubs.com/Cesar_AHN/data_frame_crear_seleccion_de_elementos_variables_columnas_filas_agregar)
+* [Creación de dataframe 2](https://www.c-sharpcorner.com/article/r-data-frame-operations-adding-rows-removing-rows-and-merging-two-data-frame/)
+* [Creación de dataframe 3](https://stackoverflow.com/questions/50920153/elegant-way-of-adding-columns-on-a-specific-position-in-a-data-frame)
+* [Trabajando con fechas](https://estadisticamente.com/trabajando-con-fechas-en-r/)
+* [Analizando datos y abriendo tuber](https://rpubs.com/GMizuno/tubeR)
+* [Cogiendo datos de Tuber](https://www.rpubs.com/statscol/youtube_data_in_r)
+* [Añadiendo columna ranking](https://stackoverflow.com/questions/24938172/adding-a-ranking-column-to-a-dataframe)
+* [Gráfico de tarta](https://www.r-graph-gallery.com/piechart-ggplot2.html)
+* [Más sobre wordcloud](https://analisisydecision.es/cloud-words-con-r-trabajar-con-la-api-del-europe-pmc-con-r/)
+* [Ejemplos reactable](https://glin.github.io/reactable/articles/examples.html)
+* Geometrías de clase
+* RScript clase 11, gtrendsR
+
+---------------
+
+<center><FONT COLOR="eb88cd">
+<font size="10">¡Espero que hayais aprendido un poquito más!</FONT></font></center>
+
+<center>
+![](imagenes/badgyalgif.gif){width="35%"}</center>
+
+
+----------------
+
+<br><br>
+
+Chunk para incluir la `session info`:
+```{r}
+sessioninfo::session_info() %>% details::details(summary = 'current session info') 
+```
+
+----------------
+
+[^1]: Qué es OAuth: https://es.wikipedia.org/wiki/OAuth
